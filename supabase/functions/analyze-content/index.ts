@@ -104,6 +104,7 @@ async function aiClassify(text: string) {
   if (!LOVABLE_API_KEY) return { classification: null, confidence: null, factCheckResults: null };
 
   try {
+    const today = new Date().toISOString().split("T")[0];
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
       headers: {
@@ -115,7 +116,17 @@ async function aiClassify(text: string) {
         messages: [
           {
             role: "system",
-            content: `You are a misinformation detection expert. Analyze the given text and respond with ONLY valid JSON (no markdown).
+            content: `
+You are a professional misinformation detection and fact-checking AI.
+
+Today's real-world date is ${today}.
+You MUST use this as the current date when evaluating claims.
+
+If a claim refers to future events, classify it as "unverifiable" rather than assuming it already happened.
+
+Analyze the given text and respond ONLY using the required JSON format.
+Be cautious with uncertain facts and avoid inventing dates or events.
+`
 
 Return this exact JSON structure:
 {
