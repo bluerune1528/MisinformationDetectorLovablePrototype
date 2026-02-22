@@ -337,10 +337,36 @@ serve(async (req: Request) => {
   aiClassify(analysisText, factSummary, webResults),
 ]);
     // Combine scores: if AI says likely_false, lower score; if credible, raise it
-    let finalScore = heuristic.score;
-    if (ai.classification === "likely_false") finalScore = Math.max(0, finalScore - 20);
-    else if (ai.classification === "misleading") finalScore = Math.max(0, finalScore - 10);
-    else if (ai.classification === "credible") finalScore = Math.min(100, finalScore + 10);
+    // --- Combine heuristic + AI decision (AI has strong influence) ---
+let finalScore = heuristic.score;
+
+if (ai?.classification) {
+  switch (ai.classification) {
+
+    case "likely_false":
+      // Strong misinformation → force low credibility
+      finalScore = Math.min(finalScore, 15);
+      break;
+
+    case "misleading":
+      // Mixed truth
+      finalScore = Math.min(finalScore, 55);
+      break;
+
+    case "credible":
+      // Verified claim
+      finalScore = Math.max(finalScore, 75);
+      break;
+
+    case "uncertain":
+      // Keep middle range
+      finalScore = Math.min(Math.max(finalScore, 40), 60);
+      break;
+  }
+}
+
+// Safety clamp
+finalScore = Math.max(0, Math.min(100, finalScore));
 
     // Generate reasoning (AI-first, heuristic fallback)
 let reasoning =
