@@ -40,11 +40,13 @@ The application accepts both **plain text** and **URLs**, analyzes the informati
 User Input (Text / URL)
             ↓
 Input Classifier
-(Text or Web Article)
             ↓
-Content Extraction
+URL → Jina Reader (Article Extraction)
+Text → Direct Processing
             ↓
-Tavily Web Search Verification
+Content Normalization
+            ↓
+Tavily Web Verification
             ↓
 Fact-Check API Validation
             ↓
@@ -69,9 +71,13 @@ Result + Explanation + History Storage
 
 ### 🧠 AI & APIs
 
-* **LLaMA API** — contextual misinformation analysis
-* **Tavily API** — real-time web search & evidence retrieval
-* **Fact Check API** — claim verification against known fact checks
+LLaMA API — contextual misinformation analysis using Large Language Models
+
+Tavily API — real-time web search and evidence retrieval
+
+Fact Check API — verification against known fact-check databases
+
+Jina Reader API — webpage content extraction and text cleaning from URLs for analysis
 
 ### 🔍 Detection Methods
 
