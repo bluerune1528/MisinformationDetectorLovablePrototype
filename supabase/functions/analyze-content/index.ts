@@ -126,6 +126,7 @@ If a claim refers to future events, classify it as "unverifiable" rather than as
 
 Analyze the given text and respond ONLY using the required JSON format.
 Be cautious with uncertain facts and avoid inventing dates or events.
+Today's exact date is ${today}. Do not guess or approximate the year.
 `
 
 Return this exact JSON structure:
