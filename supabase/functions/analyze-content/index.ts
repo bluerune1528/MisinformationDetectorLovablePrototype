@@ -127,14 +127,27 @@ function heuristicScore(text: string, urlDomain?: string) {
 // ─── URL text extraction ───
 
 async function extractTextFromUrl(url: string) {
-  console.log("🌐 Extracting article via Jina");
+  console.log("🌐 Extracting URL:", url);
 
-  // Jina Reader converts webpage → clean text
-  const readerUrl = `https://r.jina.ai/${url}`;
+  // normalize
+  url = url.trim();
 
-  const response = await fetch(readerUrl);
+  if (!url.startsWith("http")) {
+    url = "https://" + url;
+  }
+
+  // ✅ Use Jina AI reader (bypasses anti-bot protection)
+  const readerUrl = `https://r.jina.ai/http://${url.replace(/^https?:\/\//, "")}`;
+
+  const response = await fetch(readerUrl, {
+    headers: {
+      "User-Agent": "Mozilla/5.0",
+      "Accept": "text/plain",
+    },
+  });
 
   if (!response.ok) {
+    console.error("Reader fetch failed:", response.status);
     throw new Error("Could not fetch URL content");
   }
 
@@ -145,11 +158,9 @@ async function extractTextFromUrl(url: string) {
     .trim()
     .slice(0, 4000);
 
-  const domain = new URL(url).hostname;
-
   return {
     text: cleaned,
-    domain,
+    domain: new URL(url).hostname,
   };
 }
 
