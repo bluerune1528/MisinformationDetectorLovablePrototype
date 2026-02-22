@@ -112,7 +112,7 @@ async function aiClassify(text: string) {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: "google/gemini-3-flash-preview",
+        model: "gpt-4.1-mini",
         messages: [
           {
             role: "system",
