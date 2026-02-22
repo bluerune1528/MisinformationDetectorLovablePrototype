@@ -21,7 +21,13 @@ export async function analyzeContent(request: AnalysisRequest): Promise<Analysis
     reasoning: result.reasoning,
     flags: result.flags,
     sourceAuthority: result.sourceAuthority,
-    aiClassification: result.aiClassification,
+    aiClassification:
+  result.aiClassification ??
+  (result.credibilityScore >= 70
+    ? "credible"
+    : result.credibilityScore >= 40
+    ? "uncertain"
+    : "likely_false"),
     aiConfidence: result.aiConfidence,
     factCheckResults: result.factCheckResults,
     createdAt: new Date().toISOString(),
