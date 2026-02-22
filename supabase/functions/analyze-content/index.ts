@@ -1,5 +1,49 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 
+async function searchFactCheck(claim: string) {
+  const key = Deno.env.get("GOOGLE_FACTCHECK_API_KEY");
+
+  const url =
+    `https://factchecktools.googleapis.com/v1alpha1/claims:search` +
+    `?query=${encodeURIComponent(claim)}&key=${key}`;
+
+  const res = await fetch(url);
+  const data = await res.json();
+
+  return data.claims ?? [];
+}
+
+async function searchWeb(query: string) {
+  const key = Deno.env.get("TAVILY_API_KEY");
+
+  const res = await fetch("https://api.tavily.com/search", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+      api_key: key,
+      query,
+      search_depth: "advanced",
+      max_results: 5
+    })
+  });
+
+  const data = await res.json();
+  return data.results ?? [];
+}
+ function summarizeFactChecks(claims: any[]) {
+  if (!claims.length) return "No verified fact-check results found.";
+
+  return claims.slice(0, 3).map((c: any) => {
+    const publisher = c.claimReview?.[0]?.publisher?.name ?? "Unknown";
+    const rating = c.claimReview?.[0]?.textualRating ?? "No rating";
+    const title = c.text ?? "Claim";
+
+    return `${publisher} rated "${title}" as: ${rating}`;
+  }).join("\n");
+}
+
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers":
@@ -99,7 +143,11 @@ async function extractTextFromUrl(url: string): Promise<{ text: string; domain: 
 
 // ─── AI Classification via Lovable AI ───
 
-async function aiClassify(text: string) {
+async function aiClassify(
+  text: string,
+  factSummary: string,
+  webResults: any[]
+){
   const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
   if (!LOVABLE_API_KEY) return { classification: null, confidence: null, factCheckResults: null };
 
@@ -113,38 +161,88 @@ async function aiClassify(text: string) {
       },
       body: JSON.stringify({
         model: "gpt-4.1-mini",
-        messages: [
-          {
-            role: "system",
-            content: `
-You are a professional misinformation detection and fact-checking AI.
+       messages: [
+  {
+    role: "system",
+   content: `
+You are an advanced misinformation detection and fact-checking AI.
 
-Today's real-world date is ${today}.
-You MUST use this as the current date when evaluating claims.
+Your job is to evaluate a claim using REAL EVIDENCE, not guesses.
 
-If a claim refers to future events, classify it as "unverifiable" rather than assuming it already happened.
+Today's date is: ${today}
 
-Analyze the given text and respond ONLY using the required JSON format.
-Be cautious with uncertain facts and avoid inventing dates or events.
-Today's exact date is ${today}. Do not guess or approximate the year.
+--------------------------------------------------
+EVIDENCE SOURCES
+--------------------------------------------------
 
+1) Verified Fact-Check Database Results:
+${factSummary}
 
-Return this exact JSON structure:
+2) Web Search Evidence (recent sources):
+${webResults.map(r =>
+  `Title: ${r.title}
+Source: ${r.url}
+Summary: ${r.content}`
+).join("\n\n")}
+
+--------------------------------------------------
+REASONING RULES
+--------------------------------------------------
+
+You MUST follow this hierarchy:
+
+STEP 1 — Fact-Check Authority (highest priority)
+If reputable fact-checking organizations (AFP, Reuters, AP, PolitiFact, BBC, Snopes, etc.)
+have rated the claim:
+- False → classification = "likely_false"
+- True → classification = "credible"
+- Misleading → classification = "misleading"
+
+STEP 2 — Scientific & Historical Consensus
+If overwhelming scientific or historical consensus contradicts the claim,
+classify as "likely_false" even if no fact-check entry exists.
+
+STEP 3 — Evidence Support
+If multiple reliable sources support the claim → "credible".
+
+STEP 4 — Uncertainty
+Use "uncertain" ONLY when:
+- evidence conflicts, OR
+- claim refers to future/unverifiable events.
+
+DO NOT default to uncertainty when strong evidence exists.
+
+--------------------------------------------------
+OUTPUT STYLE
+--------------------------------------------------
+
+Provide a SHORT explanation suitable for normal users:
+- maximum 2–3 sentences
+- clear and direct
+- reference evidence logically (do not list URLs)
+
+--------------------------------------------------
+RESPONSE FORMAT (STRICT JSON)
+--------------------------------------------------
+
+Return ONLY valid JSON:
+
 {
-  "classification": "one of: credible, misleading, likely_false, satire, opinion, unverifiable",
-  "confidence": 0.0 to 1.0,
-  "reasoning": "brief explanation",
-  "factCheckResults": [
-    {
-      "claim": "key claim found",
-      "rating": "True / Mostly True / Half True / Mostly False / False / Unverifiable",
-      "source": "your reasoning source"
-    }
-  ]
+  "classification": "credible | misleading | likely_false | uncertain",
+  "confidence": number (0-100),
+  "analysis": "short explanation for the user",
+  "factCheckResults": []
 }
 
-Be concise but thorough. Focus on factual accuracy.`,
-          },
+Confidence Guidelines:
+- 85–100 → strong verified consensus
+- 60–85 → reliable evidence
+- 40–60 → mixed/uncertain evidence
+- 0–40 → strong contradiction
+
+Never output text outside JSON.
+`
+  },
           { role: "user", content: `Analyze this text for misinformation:\n\n${text.slice(0, 1500)}` },
         ],
       }),
@@ -184,13 +282,16 @@ Be concise but thorough. Focus on factual accuracy.`,
 // ─── Main handler ───
 
 serve(async (req: Request) => {
-console.log("NEW VERSION RUNNING 🚀");
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
     const { text, url } = await req.json();
+    const factChecks = await searchFactCheck(text);
+    const factSummary = summarizeFactChecks(factChecks);
+    const webResults = await searchWeb(text);
+   
 
     if (!text && !url) {
       return new Response(
@@ -218,10 +319,9 @@ console.log("NEW VERSION RUNNING 🚀");
 
     // Run heuristic + AI in parallel
     const [heuristic, ai] = await Promise.all([
-      Promise.resolve(heuristicScore(analysisText, urlDomain)),
-      aiClassify(analysisText),
-    ]);
-
+  Promise.resolve(heuristicScore(analysisText, urlDomain)),
+  aiClassify(analysisText, factSummary, webResults),
+]);
     // Combine scores: if AI says likely_false, lower score; if credible, raise it
     let finalScore = heuristic.score;
     if (ai.classification === "likely_false") finalScore = Math.max(0, finalScore - 20);
