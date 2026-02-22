@@ -184,6 +184,7 @@ Be concise but thorough. Focus on factual accuracy.`,
 // ─── Main handler ───
 
 serve(async (req) => {
+console.log("NEW VERSION RUNNING 🚀");
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
