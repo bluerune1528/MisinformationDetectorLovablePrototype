@@ -17,11 +17,13 @@ const ScoreIcon = ({ score }: { score: number }) => {
 const ResultsDisplay = ({ result }: Props) => {
   return (
     <div className="space-y-4 animate-in fade-in slide-in-from-bottom-4 duration-500">
-      {/* Score Card */}
+
+      {/* ✅ COMBINED SCORE + AI CARD */}
       <Card className={`border-2 ${getCredibilityBgColor(result.credibilityScore)}`}>
         <CardContent className="pt-6">
           <div className="flex items-center gap-4">
             <ScoreIcon score={result.credibilityScore} />
+
             <div className="flex-1">
               <div className="flex items-baseline gap-3">
                 <span className={`text-4xl font-bold ${getCredibilityColor(result.credibilityScore)}`}>
@@ -29,10 +31,28 @@ const ResultsDisplay = ({ result }: Props) => {
                 </span>
                 <span className="text-muted-foreground text-sm">/ 100</span>
               </div>
+
               <p className={`text-lg font-semibold ${getCredibilityColor(result.credibilityScore)}`}>
                 {getCredibilityLabel(result.aiClassification, result.credibilityScore)}
               </p>
+
+              {/* ⭐ AI INFO MOVED HERE */}
+              {result.aiClassification && (
+                <div className="flex items-center gap-2 mt-2 flex-wrap">
+                  <Badge variant="secondary" className="text-xs px-2 py-1">
+                    <Brain className="h-3 w-3 mr-1" />
+                    {result.aiClassification}
+                  </Badge>
+
+                  {result.aiConfidence !== null && (
+                    <span className="text-xs text-muted-foreground">
+                      • {Math.round(result.aiConfidence)}% confidence
+                    </span>
+                  )}
+                </div>
+              )}
             </div>
+
             {result.sourceAuthority !== null && (
               <div className="text-right">
                 <p className="text-xs text-muted-foreground">Source Authority</p>
@@ -43,37 +63,15 @@ const ResultsDisplay = ({ result }: Props) => {
         </CardContent>
       </Card>
 
-      {/* AI Classification */}
-      {result.aiClassification && (
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-base flex items-center gap-2">
-              <Brain className="h-5 w-5 text-primary" />
-              AI Classification
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="flex items-center gap-3">
-              <Badge variant="secondary" className="text-sm px-3 py-1">
-                {result.aiClassification}
-              </Badge>
-              {result.aiConfidence !== null && (
-                <span className="text-sm text-muted-foreground">
-                  {Math.round(result.aiConfidence)}% confidence
-                </span>
-              )}
-            </div>
-          </CardContent>
-        </Card>
-      )}
-
       {/* Reasoning */}
       <Card>
         <CardHeader className="pb-2">
           <CardTitle className="text-base">Analysis</CardTitle>
         </CardHeader>
         <CardContent>
-          <p className="text-sm leading-relaxed text-foreground">{result.reasoning}</p>
+          <p className="text-sm leading-relaxed text-foreground">
+            {result.reasoning}
+          </p>
         </CardContent>
       </Card>
 
@@ -117,7 +115,12 @@ const ResultsDisplay = ({ result }: Props) => {
                     <Badge variant="outline" className="text-xs">{fc.rating}</Badge>
                     <span className="text-xs text-muted-foreground">— {fc.source}</span>
                     {fc.url && (
-                      <a href={fc.url} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">
+                      <a
+                        href={fc.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-primary hover:underline"
+                      >
                         <ExternalLink className="h-3 w-3" />
                       </a>
                     )}
@@ -128,6 +131,7 @@ const ResultsDisplay = ({ result }: Props) => {
           </CardContent>
         </Card>
       )}
+
     </div>
   );
 };

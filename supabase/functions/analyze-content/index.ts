@@ -343,20 +343,22 @@ serve(async (req: Request) => {
     else if (ai.classification === "credible") finalScore = Math.min(100, finalScore + 10);
 
     // Generate reasoning (AI-first, heuristic fallback)
-let reasoning: string;
+let reasoning =
+  ai?.analysis?.trim()?.length > 30
+    ? ai.analysis
+    : null;
 
-if (ai?.analysis && ai.analysis.length > 20) {
-  // Use AI explanation if available
-  reasoning = ai.analysis;
-} else if (finalScore >= 70) {
-  reasoning =
-    "This content appears mostly credible based on our analysis. Always verify important claims through multiple trusted sources.";
-} else if (finalScore >= 40) {
-  reasoning =
-    "This content shows mixed credibility signals. We recommend fact-checking key claims before sharing.";
-} else {
-  reasoning =
-    "This content shows multiple indicators commonly found in misinformation. We strongly recommend verifying claims through trusted sources before sharing.";
+if (!reasoning) {
+  if (finalScore >= 70) {
+    reasoning =
+      "Credibility appears high based on available signals. Verify important claims independently.";
+  } else if (finalScore >= 40) {
+    reasoning =
+      "Evidence is mixed. Additional verification is recommended.";
+  } else {
+    reasoning =
+      "Multiple misinformation indicators detected. Verify using trusted sources.";
+  }
 }
 
     const analysisId = crypto.randomUUID();
