@@ -66,9 +66,16 @@ const AnalysisHistory = ({ history, onClear }: Props) => {
                 <span className={`text-2xl font-bold ${getCredibilityColor(item.credibilityScore)}`}>
                   {item.credibilityScore}
                 </span>
-                <p className={`text-xs font-medium ${getCredibilityColor(item.credibilityScore)}`}>
-                  {getCredibilityLabel(item.credibilityScore)}
-                </p>
+                <p
+  className={`text-xs font-medium ${getCredibilityColor(
+    item.credibilityScore
+  )}`}
+>
+  {getCredibilityLabel(
+    item.aiClassification,
+    item.credibilityScore
+  )}
+</p>
               </div>
             </div>
           </CardContent>
