@@ -105,10 +105,10 @@ async function aiClassify(text: string) {
 
   try {
     const today = new Date().toISOString().split("T")[0];
-    const response = await fetch("https://api.openai.com/v1/chat/completions"), {
+    const response = await fetch("https://api.openai.com/v1/chat/completions", {
       method: "POST",
       headers: {
-       Authorization: `Bearer ${Deno.env.get("OPENAI_API_KEY")}`,
+       "Authorization": `Bearer ${Deno.env.get("OPENAI_API_KEY")}`,
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
@@ -127,7 +127,7 @@ If a claim refers to future events, classify it as "unverifiable" rather than as
 Analyze the given text and respond ONLY using the required JSON format.
 Be cautious with uncertain facts and avoid inventing dates or events.
 Today's exact date is ${today}. Do not guess or approximate the year.
-`
+
 
 Return this exact JSON structure:
 {
@@ -183,7 +183,7 @@ Be concise but thorough. Focus on factual accuracy.`,
 
 // ─── Main handler ───
 
-serve(async (req) => {
+serve(async (req: Request) => {
 console.log("NEW VERSION RUNNING 🚀");
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
