@@ -1,73 +1,241 @@
-# Welcome to your Lovable project
+# 🧠 Misinformation Detector — AI-Assisted Web Application (Prototype)
 
-## Project info
+An AI-assisted web application that analyzes text or web URLs to detect potential misinformation using **LLM reasoning, web verification, fact-checking APIs, and hybrid scoring techniques**.
 
-**URL**: https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID
+Developed as part of the **Project Based Learning & Management (PBLM-2)**.
 
-## How can I edit this code?
+---
 
-There are several ways of editing your application.
+## 📌 Project Overview
 
-**Use Lovable**
+The rapid spread of misinformation across digital platforms makes automated credibility assessment essential. This project provides a system that evaluates user-submitted content using a combination of:
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and start prompting.
+* Large Language Model (LLM) analysis
+* Real-time web search verification
+* Fact-checking services
+* Heuristic scoring methods
 
-Changes made via Lovable will be committed automatically to this repo.
+The application accepts both **plain text** and **URLs**, analyzes the information contextually, and generates a credibility score with explanations.
 
-**Use your preferred IDE**
+---
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+## ✨ Features
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+* ✅ Text misinformation detection
+* ✅ URL-based article analysis
+* ✅ LLaMA-powered AI reasoning
+* ✅ Real-time web verification (Tavily search)
+* ✅ Fact-check API integration
+* ✅ Hybrid credibility scoring system
+* ✅ Explanation-based results
+* ✅ Analysis history tracking
+* ✅ Modern responsive UI
+* ✅ Cloud deployment
 
-Follow these steps:
+---
 
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
+## 🧠 Detection Pipeline
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+```
+User Input (Text / URL)
+            ↓
+Input Classifier
+(Text or Web Article)
+            ↓
+Content Extraction
+            ↓
+Tavily Web Search Verification
+            ↓
+Fact-Check API Validation
+            ↓
+LLaMA AI Analysis
+            ↓
+Hybrid Scoring Engine
+            ↓
+Result + Explanation + History Storage
+```
 
-# Step 3: Install the necessary dependencies.
-npm i
+---
 
-# Step 4: Start the development server with auto-reloading and an instant preview.
+## ⚙️ Technologies Used
+
+### 🖥️ Frontend
+
+* React
+* TypeScript
+* Vite
+* Tailwind CSS
+* shadcn/ui
+
+### 🧠 AI & APIs
+
+* **LLaMA API** — contextual misinformation analysis
+* **Tavily API** — real-time web search & evidence retrieval
+* **Fact Check API** — claim verification against known fact checks
+
+### 🔍 Detection Methods
+
+* Heuristic rule-based analysis
+* AI semantic reasoning
+* Source verification
+* Hybrid credibility scoring algorithm
+
+### 🗄️ Backend & Database
+
+* Supabase
+
+  * History storage
+  * Backend services
+  * API integration support
+
+### 🚀 Development & Deployment
+
+* Lovable (AI-assisted development environment)
+* GitHub (version control)
+* Vercel (hosting & continuous deployment)
+* Node.js runtime
+
+---
+
+## 📂 Project Structure
+
+```
+src/
+ ├── components/        UI components
+ ├── pages/             Application pages
+ ├── services/          API integrations
+ ├── analysis/          Scoring & detection logic
+ └── integrations/      Supabase connection
+
+supabase/               Database configuration
+public/                 Static assets
+vite.config.ts          Build configuration
+```
+
+---
+
+## 🧪 How It Works
+
+### 1️⃣ Input Detection
+
+The system determines whether the user input is:
+
+* plain text, or
+* a web URL.
+
+### 2️⃣ Content Processing
+
+* URLs are parsed and article content is extracted.
+* Text is cleaned and prepared for analysis.
+
+### 3️⃣ Verification Stage
+
+* Tavily searches supporting or contradicting sources.
+* Fact-check APIs validate known claims.
+
+### 4️⃣ AI Analysis
+
+The LLaMA model evaluates:
+
+* claim plausibility
+* linguistic patterns
+* contextual consistency
+* misinformation indicators.
+
+### 5️⃣ Hybrid Scoring
+
+A combined score is calculated using:
+
+* AI confidence
+* fact-check matches
+* source reliability
+* heuristic penalties
+
+### 6️⃣ Output
+
+The system returns:
+
+* Credibility score
+* Classification result
+* Explanation summary
+
+---
+
+## 🚀 Local Setup
+
+### Clone Repository
+
+```bash
+git clone https://github.com/bluerune1528/MisinformationDetectorLovablePrototype.git
+cd MisinformationDetectorLovablePrototype
+```
+
+### Install Dependencies
+
+```bash
+npm install
+```
+
+### Create `.env` File
+
+```
+VITE_SUPABASE_URL=
+VITE_SUPABASE_ANON_KEY=
+VITE_LLAMA_API_KEY=
+VITE_TAVILY_API_KEY=
+VITE_FACTCHECK_API_KEY=
+```
+
+*(Environment variables are not committed to GitHub for security.)*
+
+### Run Locally
+
+```bash
 npm run dev
 ```
 
-**Edit a file directly in GitHub**
+Open:
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+```
+http://localhost:5173
+```
 
-**Use GitHub Codespaces**
+---
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+## 🌐 Deployment Workflow
 
-## What technologies are used for this project?
+1. Development performed using Lovable.
+2. Changes automatically synced to GitHub.
+3. GitHub triggers automatic deployment on Vercel.
+4. Live website updates after successful builds.
 
-This project is built with:
+---
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+## 🔮 Future Improvements
 
-## How can I deploy this project?
+* Advanced NLP fine-tuned models
+* Source credibility knowledge base
+* Sentiment & bias detection
+* Multi-language misinformation detection
+* Explainable AI visualization
+* Real-time social media integration
 
-Simply open [Lovable](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and click on Share -> Publish.
+---
 
-## Can I connect a custom domain to my Lovable project?
+## ⚠️ Disclaimer
 
-Yes, you can!
+This system provides automated credibility assistance and should not be considered a definitive fact-checking authority. Users should verify critical information from trusted sources.
 
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
+---
 
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
+## 👨‍💻 Contributors
+
+* Add Team Members
+
+---
+
+## 📄 License
+
+Educational and research purposes only.
+
+---
