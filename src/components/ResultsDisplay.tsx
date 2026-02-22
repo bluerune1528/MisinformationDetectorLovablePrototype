@@ -30,7 +30,7 @@ const ResultsDisplay = ({ result }: Props) => {
                 <span className="text-muted-foreground text-sm">/ 100</span>
               </div>
               <p className={`text-lg font-semibold ${getCredibilityColor(result.credibilityScore)}`}>
-                {getCredibilityLabel(result.credibilityScore)}
+                {getCredibilityLabel(result.aiClassification, result.credibilityScore)}
               </p>
             </div>
             {result.sourceAuthority !== null && (

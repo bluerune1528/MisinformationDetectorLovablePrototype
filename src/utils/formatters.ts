@@ -1,9 +1,27 @@
-export function getCredibilityLabel(score: number): string {
-  if (score >= 70) return "Likely Credible";
-  if (score >= 40) return "Uncertain";
+export function getCredibilityLabel(
+  classification?: string,
+  score?: number
+): string {
+
+  if (classification) {
+    const map: Record<string, string> = {
+      credible: "Likely Credible",
+      misleading: "Misleading",
+      likely_false: "Likely Misinformation",
+      uncertain: "Uncertain"
+    };
+
+    return map[classification] ?? "Uncertain";
+  }
+
+  // fallback (old behaviour)
+  if (score !== undefined) {
+    if (score >= 70) return "Likely Credible";
+    if (score >= 40) return "Uncertain";
+  }
+
   return "Likely Misinformation";
 }
-
 export function getCredibilityColor(score: number): string {
   if (score >= 70) return "text-green-600";
   if (score >= 40) return "text-yellow-600";
