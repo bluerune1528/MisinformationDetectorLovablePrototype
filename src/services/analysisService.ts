@@ -36,8 +36,11 @@ function saveToHistory(item: AnalysisResult): void {
   try {
     const history = getHistory();
     history.unshift(item);
+const unique = Array.from(
+  new Map(history.map(h => [h.id, h])).values()
+);
     // Keep only last 50
-    const trimmed = history.slice(0, 50);
+    const trimmed = unique.slice(0, 50);
     localStorage.setItem(HISTORY_KEY, JSON.stringify(trimmed));
   } catch {
     // localStorage might be full
@@ -47,7 +50,16 @@ function saveToHistory(item: AnalysisResult): void {
 export function getHistory(): AnalysisResult[] {
   try {
     const raw = localStorage.getItem(HISTORY_KEY);
-    return raw ? JSON.parse(raw) : [];
+    if (!raw) return [];
+
+    const parsed = JSON.parse(raw);
+
+    // migrate old entries
+    return parsed.map((item: any) => ({
+      ...item,
+      aiClassification: item.aiClassification ?? null,
+      aiConfidence: item.aiConfidence ?? null,
+    }));
   } catch {
     return [];
   }
