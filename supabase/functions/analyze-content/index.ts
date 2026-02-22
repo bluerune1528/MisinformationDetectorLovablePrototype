@@ -145,6 +145,23 @@ async function extractTextFromUrl(url: string) {
     console.log("STATUS:", response.status);
 
     const text = await response.text();
+    // Detect blocked / security pages
+const lower = html.toLowerCase();
+
+if (
+  lower.includes("access denied") ||
+  lower.includes("ddos") ||
+  lower.includes("security check") ||
+  lower.includes("captcha") ||
+  html.length < 500
+) {
+  console.log("⚠️ Blocked or invalid article detected");
+
+  return {
+    text: "",
+    domain: new URL(url).hostname,
+  };
+}
 
     // ✅ DO NOT THROW — fallback instead
     if (!text || text.length < 200) {
