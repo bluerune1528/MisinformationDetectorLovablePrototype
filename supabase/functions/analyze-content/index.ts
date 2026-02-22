@@ -129,39 +129,51 @@ function heuristicScore(text: string, urlDomain?: string) {
 async function extractTextFromUrl(url: string) {
   console.log("🌐 Extracting URL:", url);
 
-  // normalize
-  url = url.trim();
+  try {
+    url = url.trim();
 
-  if (!url.startsWith("http")) {
-    url = "https://" + url;
+    if (!url.startsWith("http")) {
+      url = "https://" + url;
+    }
+
+    // Try reader proxy
+    const readerUrl = `https://r.jina.ai/${url}`;
+    console.log("Fetching:", readerUrl);
+
+    const response = await fetch(readerUrl);
+
+    console.log("STATUS:", response.status);
+
+    const text = await response.text();
+
+    // ✅ DO NOT THROW — fallback instead
+    if (!text || text.length < 200) {
+      console.log("Reader returned little content, falling back to URL text");
+      return {
+        text: url, // fallback: analyze URL itself
+        domain: new URL(url).hostname,
+      };
+    }
+
+    const cleaned = text
+      .replace(/\s+/g, " ")
+      .trim()
+      .slice(0, 4000);
+
+    return {
+      text: cleaned,
+      domain: new URL(url).hostname,
+    };
+
+  } catch (err) {
+    console.error("URL extraction failed:", err);
+
+    // ✅ NEVER CRASH ANALYSIS
+    return {
+      text: url,
+      domain: new URL(url).hostname,
+    };
   }
-
-  // ✅ Use Jina AI reader (bypasses anti-bot protection)
-  const readerUrl = `https://r.jina.ai/http://${url.replace(/^https?:\/\//, "")}`;
-
-  const response = await fetch(readerUrl, {
-    headers: {
-      "User-Agent": "Mozilla/5.0",
-      "Accept": "text/plain",
-    },
-  });
-
-  if (!response.ok) {
-    console.error("Reader fetch failed:", response.status);
-    throw new Error("Could not fetch URL content");
-  }
-
-  const text = await response.text();
-
-  const cleaned = text
-    .replace(/\s+/g, " ")
-    .trim()
-    .slice(0, 4000);
-
-  return {
-    text: cleaned,
-    domain: new URL(url).hostname,
-  };
 }
 
 // ─── AI Classification ───
