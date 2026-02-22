@@ -126,19 +126,31 @@ function heuristicScore(text: string, urlDomain?: string) {
 
 // ─── URL text extraction ───
 
-async function extractTextFromUrl(url: string): Promise<{ text: string; domain: string }> {
-  const res = await fetch(url, { headers: { "User-Agent": "MisinfoDetector/1.0" } });
-  if (!res.ok) throw new Error("Could not fetch URL");
-  const html = await res.text();
-  const cleaned = html
-    .replace(/<script[\s\S]*?<\/script>/gi, "")
-    .replace(/<style[\s\S]*?<\/style>/gi, "")
-    .replace(/<[^>]+>/g, " ")
+async function extractTextFromUrl(url: string) {
+  console.log("🌐 Extracting article via Jina");
+
+  // Jina Reader converts webpage → clean text
+  const readerUrl = `https://r.jina.ai/${url}`;
+
+  const response = await fetch(readerUrl);
+
+  if (!response.ok) {
+    throw new Error("Could not fetch URL content");
+  }
+
+  const text = await response.text();
+
+  const cleaned = text
     .replace(/\s+/g, " ")
     .trim()
-    .slice(0, 2000);
+    .slice(0, 4000);
+
   const domain = new URL(url).hostname;
-  return { text: cleaned, domain };
+
+  return {
+    text: cleaned,
+    domain,
+  };
 }
 
 // ─── AI Classification ───
