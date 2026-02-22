@@ -342,31 +342,36 @@ serve(async (req: Request) => {
     else if (ai.classification === "misleading") finalScore = Math.max(0, finalScore - 10);
     else if (ai.classification === "credible") finalScore = Math.min(100, finalScore + 10);
 
-    // Generate reasoning
-    let reasoning: string;
-    if (finalScore >= 70) {
-      reasoning =
-        "This content appears mostly credible based on our analysis. Always verify important claims through multiple trusted sources.";
-    } else if (finalScore >= 40) {
-      reasoning =
-        "This content shows mixed credibility signals. We recommend fact-checking key claims before sharing.";
-    } else {
-      reasoning =
-        "This content shows multiple indicators commonly found in misinformation. We strongly recommend verifying claims through trusted sources before sharing.";
-    }
+    // Generate reasoning (AI-first, heuristic fallback)
+let reasoning: string;
+
+if (ai?.analysis && ai.analysis.length > 20) {
+  // Use AI explanation if available
+  reasoning = ai.analysis;
+} else if (finalScore >= 70) {
+  reasoning =
+    "This content appears mostly credible based on our analysis. Always verify important claims through multiple trusted sources.";
+} else if (finalScore >= 40) {
+  reasoning =
+    "This content shows mixed credibility signals. We recommend fact-checking key claims before sharing.";
+} else {
+  reasoning =
+    "This content shows multiple indicators commonly found in misinformation. We strongly recommend verifying claims through trusted sources before sharing.";
+}
 
     const analysisId = crypto.randomUUID();
 
     const body = {
-      credibilityScore: finalScore,
-      reasoning,
-      flags: heuristic.flags,
-      sourceAuthority: heuristic.sourceAuthority,
-      aiClassification: ai.classification,
-      aiConfidence: ai.confidence,
-      factCheckResults: ai.factCheckResults,
-      analysisId,
-    };
+  credibilityScore: finalScore,
+  reasoning,
+  aiAnalysis: ai?.analysis ?? null, // ⭐ NEW
+  flags: heuristic.flags,
+  sourceAuthority: heuristic.sourceAuthority,
+  aiClassification: ai?.classification ?? null,
+  aiConfidence: ai?.confidence ?? null,
+  factCheckResults: ai?.factCheckResults ?? null,
+  analysisId,
+};
 
     return new Response(JSON.stringify(body), {
       status: 200,
