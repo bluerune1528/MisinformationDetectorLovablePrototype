@@ -59,7 +59,7 @@ const ResultsDisplay = ({ result }: Props) => {
               </Badge>
               {result.aiConfidence !== null && (
                 <span className="text-sm text-muted-foreground">
-                  {Math.round(result.aiConfidence * 100)}% confidence
+                  {Math.round(result.aiConfidence)}% confidence
                 </span>
               )}
             </div>

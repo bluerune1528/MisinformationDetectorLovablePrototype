@@ -141,26 +141,32 @@ async function extractTextFromUrl(url: string): Promise<{ text: string; domain: 
   return { text: cleaned, domain };
 }
 
-// ─── AI Classification via Lovable AI ───
-
+// ─── AI Classification ───
 async function aiClassify(
   text: string,
   factSummary: string,
   webResults: any[]
 ){
-  const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
-  if (!LOVABLE_API_KEY) return { classification: null, confidence: null, factCheckResults: null };
+  console.log("🔥 AI FUNCTION ENTERED");
+const GROQ_API_KEY = Deno.env.get("GROQ_API_KEY");
 
+if (!GROQ_API_KEY) {
+  console.error("Missing GROQ API key");
+  return { classification: null, confidence: null };
+}
   try {
     const today = new Date().toISOString().split("T")[0];
-    const response = await fetch("https://api.openai.com/v1/chat/completions", {
-      method: "POST",
-      headers: {
-       "Authorization": `Bearer ${Deno.env.get("OPENAI_API_KEY")}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        model: "gpt-4.1-mini",
+    const response = await fetch(
+  "https://api.groq.com/openai/v1/chat/completions",
+  {
+    method: "POST",
+    headers: {
+      "Authorization": `Bearer ${GROQ_API_KEY}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      model: "llama-3.3-70b-versatile",
+      temperature: 0.2,
        messages: [
   {
     role: "system",
@@ -217,7 +223,6 @@ OUTPUT STYLE
 --------------------------------------------------
 
 Provide a SHORT explanation suitable for normal users:
-- maximum 2–3 sentences
 - clear and direct
 - reference evidence logically (do not list URLs)
 
@@ -247,6 +252,14 @@ Never output text outside JSON.
         ],
       }),
     });
+    const data = await response.json();
+
+const aiText =
+  data.choices?.[0]?.message?.content ?? "{}";
+
+const aiResult = JSON.parse(aiText);
+
+return aiResult;
 
     if (response.status === 429) {
       console.error("AI rate limited");
@@ -261,7 +274,7 @@ Never output text outside JSON.
       return { classification: null, confidence: null, factCheckResults: null };
     }
 
-    const data = await response.json();
+    
     const content = data.choices?.[0]?.message?.content || "";
 
     // Parse JSON from response (handle potential markdown wrapping)
@@ -287,6 +300,7 @@ serve(async (req: Request) => {
   }
 
   try {
+    console.log("🔥 FUNCTION STARTED");
     const { text, url } = await req.json();
     const factChecks = await searchFactCheck(text);
     const factSummary = summarizeFactChecks(factChecks);
