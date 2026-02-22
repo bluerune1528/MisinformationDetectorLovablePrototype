@@ -301,41 +301,43 @@ serve(async (req: Request) => {
 
   try {
     console.log("🔥 FUNCTION STARTED");
+
     const { text, url } = await req.json();
-    const factChecks = await searchFactCheck(text);
-    const factSummary = summarizeFactChecks(factChecks);
-    const webResults = await searchWeb(text);
-   
 
     if (!text && !url) {
       return new Response(
         JSON.stringify({ error: "Provide either 'text' or 'url'" }),
-        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        { status: 400, headers: corsHeaders }
       );
     }
 
     let analysisText = text || "";
     let urlDomain: string | undefined;
 
-    // Extract text from URL if needed
+    // ✅ STEP 1 — Extract URL content FIRST
     if (url) {
-      try {
-        const extracted = await extractTextFromUrl(url);
-        analysisText = extracted.text;
-        urlDomain = extracted.domain;
-      } catch {
-        return new Response(
-          JSON.stringify({ error: "Could not fetch the provided URL" }),
-          { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-        );
+      console.log("🌐 Extracting URL:", url);
+
+      const extracted = await extractTextFromUrl(url);
+
+      analysisText = extracted.text;
+      urlDomain = extracted.domain;
+
+      if (!analysisText || analysisText.length < 50) {
+        throw new Error("Could not extract readable content");
       }
     }
 
-    // Run heuristic + AI in parallel
+    // ✅ STEP 2 — NOW run searches using real text
+    const factChecks = await searchFactCheck(analysisText);
+    const factSummary = summarizeFactChecks(factChecks);
+    const webResults = await searchWeb(analysisText);
+
+    // ✅ STEP 3 — Heuristic + AI
     const [heuristic, ai] = await Promise.all([
-  Promise.resolve(heuristicScore(analysisText, urlDomain)),
-  aiClassify(analysisText, factSummary, webResults),
-]);
+      Promise.resolve(heuristicScore(analysisText, urlDomain)),
+      aiClassify(analysisText, factSummary, webResults),
+    ]);
     // Combine scores: if AI says likely_false, lower score; if credible, raise it
     // --- Combine heuristic + AI decision (AI has strong influence) ---
 let finalScore = heuristic.score;
