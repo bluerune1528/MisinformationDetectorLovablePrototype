@@ -274,7 +274,7 @@ DO NOT default to uncertainty when strong evidence exists.
 OUTPUT STYLE
 --------------------------------------------------
 
-Provide an explanation not too short not too big suitable for normal users:
+Provide an explanation not too short not too big, suitable for normal users:
 - clear and direct
 - must give reference evidence logically, you must include trusted/credible news urls/names.
 
