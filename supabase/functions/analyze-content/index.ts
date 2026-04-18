@@ -274,9 +274,9 @@ DO NOT default to uncertainty when strong evidence exists.
 OUTPUT STYLE
 --------------------------------------------------
 
-Provide a SHORT explanation suitable for normal users:
+Provide an explanation not too short not too big suitable for normal users:
 - clear and direct
-- reference evidence logically (do not list URLs)
+- reference evidence logically
 
 --------------------------------------------------
 RESPONSE FORMAT (STRICT JSON)
